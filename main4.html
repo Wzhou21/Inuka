@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Annotating Text Box</title>
+	<style>
+		.textbox{
+			background: transparent;
+			border: dotted black;
+			border-width: 2px;
+			font-size: : 5px;
+			font-family: bold Arial;
+			position: absolute; 
+		}
+	</style>
+	<script src = "Javascript files/draggingFeature.js"></script>
+	<script>
+		var imagePath;
+		var counter = 0; //counter to toggle between textboxes
+		var _validFileExtensions = [".jpg", ".jpeg", ".bmp", ".gif", ".png",".txt"]; 
+		var removeBln = false;
+		
+		var img = new Image();
+		var blank = new Image();
+        blank.src = "Images/white background.jpg";
+		
+		/*Initialisation function*/
+		function register(){
+			var ctx = document.getElementById("myCanvas").getContext("2d");                                  
+			img.src = "Images/No Image Selected.jpg";
+			resizeMyCanvas();
+			img.onload = function(){ //waits for image object to load finish first before displaying image
+				ctx.drawImage(img,10,10,document.getElementById("myCanvas").width - 20,document.getElementById("myCanvas").height - 20);
+			}
+		}
+		/*Insert button*/
+		function insertImage(){
+			document.getElementById("imagePath").click();
+		}
+		function insert() {
+			var arrInputs = document.getElementById("imagePath"); //storing inputs into HTML element list
+		    if (arrInputs.type == "file") {    //if the type of input is a file
+				var sFileName = arrInputs.value;   //store the value of OInput into sFileName
+				var blnValid = false;	//Set whether file is valid or not
+				for (var i = 0; i < _validFileExtensions.length; i++) {//Compares with all file extension	                
+					if (sFileName.substr(sFileName.length - _validFileExtensions[i].length, _validFileExtensions[i].length).toLowerCase() == _validFileExtensions[i].toLowerCase()) { //checks the files extension
+						blnValid = true; //set that files are valid           
+					    	if (sFileName.substr(sFileName.length - _validFileExtensions[i].length, _validFileExtensions[i].length).toLowerCase() == _validFileExtensions[5].toLowerCase()) { //checks the files extension
+					        	alert("Loading Data from Text File...");
+					            var fr = new FileReader();
+								fr.onload = function(){
+									var c = fr.result;
+									var editedContent = c.replace("bata","data");
+									var objectData = JSON.parse(editedContent);
+									img.src = objectData.image;                             
+									drawCanvasImage();
+									loadingAnnotationBoxes(objectData);					                
+								}
+								fr.readAsText(document.getElementById("imagePath").files[0]);
+					        }
+					        else{
+					           	alert("Loading Image...");
+					            var reader = new FileReader();
+								reader.onload = function (e) {
+									img.src = e.target.result;	
+									imagePath = e.target.result;
+									drawCanvasImage();
+								}
+								reader.readAsDataURL(document.getElementById("imagePath").files[0]);  
+					        }
+				    }
+				}
+				if (!blnValid) { //if files are not valid
+				   	alert(sFileName + " is invalid. Please select files with extensions of " + _validFileExtensions.join(", "));
+				}
+		    }
+		}
+		/*Resizing the Canvas*/
+		function resizeMyCanvas(){
+			/*console.log("-------Window Size-------");
+			console.log("inner height = " + window.innerHeight);
+			console.log("inner width = " + window.innerWidth);
+			console.log("outer height = " + window.outerHeight);
+			console.log("outer width = " + window.outerWidth);
+			console.log("-------------------------");*/
+
+			if (window.innerHeight > window.outerWidth){
+				if(window.innerWidth < 630){
+					document.getElementById("myCanvas").width = innerWidth - 20;
+					document.getElementById("myCanvas").height = innerWidth - 20;
+				}
+				else{
+					document.getElementById("myCanvas").width = 600;
+					document.getElementById("myCanvas").height = 600;
+				}
+			}
+			else{
+				if(window.innerHeight < 630){
+					document.getElementById("myCanvas").width = window.innerHeight - 20;
+					document.getElementById("myCanvas").height = window.innerHeight - 20;
+				}
+				else{
+					document.getElementById("myCanvas").width = 600;
+					document.getElementById("myCanvas").height = 600;
+				}
+			}
+			/*console.log("-------Canvas Size-------");
+			console.log("Canvas Height: " + document.getElementById("myCanvas").height);
+			console.log("Canvas Width: " + document.getElementById("myCanvas").width);
+			console.log("-------------------------");*/
+
+			if (img.src != "file:///C:/Users/MingChuan/Documents/Annotation%20of%20Medical%20Images/Images/No%20Image%20Selected.jpg"){
+				img.src = imagePath;
+				drawCanvasImage();
+			}
+			else{
+				img.src = "Images/No Image Selected.jpg";
+				drawCanvasImage();
+			}
+		}
+		/*Load annotation boxes*/
+		function loadingAnnotationBoxes(objectData){
+			for (var i = 0; i < objectData.x.length; i++){
+				createAnnotationBoxes(i, objectData.x[i], objectData.y[i], objectData.content[i]);
+				counter = i + 1;
+			}
+		}
+		/*Create Annotation Boxes*/
+		function createAnnotationBoxes(cycle ,x ,y ,content){
+			var textElement = document.createElement("TEXTAREA");
+			textElement.className = "textbox"; 
+			textElement.id = "textbox" + (cycle + 1);
+			textElement.style.top = y;			
+			textElement.style.left = x;
+			textElement.value = content;
+			document.body.appendChild(textElement);
+			dragElement(textElement);
+			textElement.addEventListener("click", function(){
+    			if (removeBln == true){
+    				textElement.hidden = true;
+    				removeBln = false;
+    				/*console.log(textElement.id + " is hidden");*/
+    				}
+    		});
+		}	
+		/*Annotate button*/
+		function createTextBox(textElement){
+			textElement.className = "textbox"; 
+			textElement.id = "textbox" + counter;
+			textElement.style.top = event.pageY + "px";			
+			textElement.style.left = event.pageX + "px";
+			document.body.appendChild(textElement);
+		}	
+		/*Annotate Button*/
+		function annotate(){
+			alert("Click on Image to Annotate");
+			counter++;
+			document.getElementById("myCanvas").onclick = function(){
+				var x = document.createElement("TEXTAREA");
+				createTextBox(x);
+    			dragElement(x);
+    			x.addEventListener("click", function(){
+    				if (removeBln == true){
+    					x.hidden = true;
+    					removeBln = false;
+    					/*console.log(x.id + " is hidden");*/
+    				}
+    			});
+    			console.log(x.id + ": top( " + x.style.top +" ), left( " + x.style.left + " ). removeBln: " + removeBln);
+    			document.getElementById("myCanvas").onclick = false;
+			}
+		}
+		/*Remove button*/
+		function remove(){
+			alert("Select Textbox to Remove");
+			removeBln = true;
+			/*console.log("removeBln: " + removeBln);		*/
+		}	
+		/*Canvas drawing function*/
+		function drawCanvasImage(){
+   			var ctx = document.getElementById("myCanvas").getContext("2d"); //Load saved Images 
+    		img.onload = function(){        
+				if(img.height > img.width){ //Centralises image
+					ctx.drawImage(blank,0,0,document.getElementById("myCanvas").width, document.getElementById("myCanvas").height);
+					var widthOverHeightRatio = img.width/img.height;
+					var editedWidth = widthOverHeightRatio * (document.getElementById("myCanvas").width - 20);
+					var imgPosition = (document.getElementById("myCanvas").width - editedWidth) / 2;
+					ctx.drawImage(img,imgPosition,10,editedWidth,(document.getElementById("myCanvas").height - 20));
+				}
+				else{
+					ctx.drawImage(blank,0,0,document.getElementById("myCanvas").width, document.getElementById("myCanvas").height);
+					var heightOverWidthRatio = img.height/img.width;
+					var editedHeight = heightOverWidthRatio * document.getElementById("myCanvas").height - 20;
+					var imgPosition = (document.getElementById("myCanvas").height - editedHeight) / 2;
+					ctx.drawImage(img,10,imgPosition, (document.getElementById("myCanvas").width - 20), editedHeight);
+				}
+			}
+		}
+		/*Reset button*/
+		function setToDefault(){
+			counter = 0;
+			var textbox = document.getElementsByTagName("textarea");
+			for (var i = (textbox.length - 1); i > -1; i--) {
+   				textbox[i].remove();
+			}
+			register();
+		}
+		/*Save Button*/
+		function saveData(){
+			var savedImagePath = imagePath;
+			var savedData = {
+				"image": savedImagePath,
+				"x":[],
+				"y":[],
+				"content":[]
+			};
+			for(var i = 1; i < (counter + 1); i++){
+				savedData.x.push(document.getElementById("textbox" + i).style.left);
+				savedData.y.push(document.getElementById("textbox" + i).style.top);
+				savedData.content.push(document.getElementById("textbox" + i).value);
+			}
+		
+			var savedDataString = JSON.stringify(savedData); //Converts JSON data to string
+			localStorage.setItem("savedData", savedDataString);
+			alert("Data Saved!");
+			/*console.log(savedData.image);*/
+		}
+	</script>
+</head>
+<body onload = "register()" onresize = "resizeMyCanvas()">
+	<button id = "insert" onclick = "insertImage()" position = "fixed">Upload</button>
+	<button id = "annotate" onclick = "annotate()" position = "fixed">Annotate</button>
+	<button id = "remove" onclick = "remove()" position = "fixed">Remove</button>
+	<button id = "setToDefault" onclick = "setToDefault()" position = "fixed">Reset</button><br><br>
+	<canvas id = "myCanvas" style = "border:3px solid #000000;"></canvas><br><br>
+	<button id = "saveData" onclick = "saveData()">Save</button>
+	<input id = "imagePath" type = "file" onchange = "insert()" hidden = "true">
+</body>
+</html>
