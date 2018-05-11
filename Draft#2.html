@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+
+    <title>Draft#2</title>
+
+<style>
+/*Uploadbutton*/
+input[type="file"] {
+    display: none;
+}
+.custom-file-upload {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    background-color: white; 
+    border: 2px solid black;
+    color: #black;
+    padding: 6px 12px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    -webkit-transition-duration: 0.2s; /* Safari */
+    transition-duration: 0.2s;
+    cursor: pointer;
+}
+.custom-file-upload:hover{
+    background-color: #555555;
+    color: white;
+}
+/*Canvas*/
+.canvasDesign{
+    position: absolute;
+    left: 10px;
+    top: 80px;
+    border: 2px solid  #FF0000;
+}
+.canvasDesignLayer2{
+    position: absolute;
+    left: 10px;
+    top:  80px;
+    border: 2px solid black;
+}
+/*Brightness SliderBar*/
+.slidecontainerBrightness {
+     position: absolute;
+    left: 180px;
+    top: 15px;
+    width: 50%;
+}
+.rangeBrightness {
+    -webkit-appearance: none;
+    width:100%;
+    height: 10px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+.rangeBrightness:hover {
+    opacity: 1;
+}
+.rangeBrightness::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #4CAF50;
+    cursor: pointer;
+}
+.rangeBrightness::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #4CAF50;
+    cursor: pointer;
+}
+/*Brush SliderBar*/
+.slidecontainerBrushSize{
+    position: absolute;
+    left: 600px;
+    top: 40px;
+    width: 20%;
+}
+/*DrawButton*/
+.buttoncontainer{
+    width: 70px;
+    height: 150px;
+    position:relative;
+    top: 75px;
+    left:520px;
+}
+.drawbtn{
+    position:absolute;
+    top: 5px;
+    left:15px;
+    background-color: transparent;
+    background-repeat:no-repeat;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #95A5A6;
+}
+.erasebtn{
+    position:absolute;
+    top: 55px;
+    left:15px;
+    background-color: transparent;
+    background-repeat:no-repeat;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #95A5A6;
+}
+.resetbtn{
+    position:absolute;
+    top: 105px;
+    left:15px;
+    background-color: transparent;
+    background-repeat:no-repeat;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #95A5A6;
+}
+.penPosition{
+    position:absolute;
+    top: 10px;
+    left:20px;
+}
+.erasePosition{
+    position:absolute;
+    top: 60px;
+    left:20px;
+}
+.resetPosition{
+     position:absolute;
+    top: 110px;
+    left:20px;
+}
+
+</style>
+</head>
+<body>
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" integrity="sha384-uefMccjFJAIv6A+rW+L4AHf99KvxDjWSu1z9VI8SKNVmz4sk7buKt/6v9KI65qnm" crossorigin="anonymous"></script>
+
+    <!---HTML Upload Button -->
+        <label for="file-upload" class="custom-file-upload">
+        <i class="fa fa-cloud-upload"></i> Upload Photo
+        </label>
+        <input id="file-upload" type="file" onchange="insert()"/>
+    <!---Brightness Slider Bar-->
+        <div class="slidecontainerBrightness">
+        <input type="range" min="1" max="200" value="100" class="rangeBrightness" id="rangeBrightness">
+        <p>Brightness: <span id="demoBrightness"></span></p>
+        </div>
+    <!---Brush Size Slider-->
+        <div class="slidecontainerBrushSize">
+        <p>Brush Size: <span id="demoBrush"></span></p>
+        <input type="range" class="rangeBrush" min="1" max="20" value="10" id="rangeBrush" disabled="disabled">
+        </div>
+    <!---Pen & Earse Button-->
+        <div class="buttoncontainer">
+            <img class="penPosition" src='C:\Users\koonw\Downloads\Pen.png' alt='pen' style="width:40%">
+            <button id = "pen" class="drawbtn" onclick="drawFunction()" disabled="disabled"></button>
+            <img class="erasePosition" src='C:\Users\koonw\Downloads\download.png' alt='erase' style="width:40%">
+            <button id= "eraser" class="erasebtn" disabled="disabled"></button>
+            <img class="resetPosition" src='C:\Users\koonw\Downloads\449323-200.png' alt='reset' style="width:40%">
+            <button id="reset" class="resetbtn" onclick="resetFunction()"></button>
+        </div>
+    <!---Canvas-->
+        <canvas id = "myCanvas" width ="500" height = "500" style="border:2px solid #000000;" class="canvasDesign" ></canvas>
+        <canvas id = "myCanvasLayer2" width ="500" height = "500" style="border:2px solid #000000;" class="canvasDesignLayer2" ></canvas>
+        
+<script src="C:\Users\koonw\Downloads\Javascipt\LoadCanvas.js"></script> 
+<script src="C:\Users\koonw\Downloads\Javascipt\RangeSlider.js"></script> 
+<script src="C:\Users\koonw\Downloads\Javascipt\Drawing.js"></script>    
+<script src="C:\Users\koonw\Downloads\Javascipt\Reset.js"></script>    
+
+</body>
+</html>
