@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Canvas Zoom</title>
+	<script>
+		var imagePath;
+		var zoomIncrement = 1;
+		var _validFileExtensions = [".jpg", ".jpeg", ".bmp", ".gif", ".png",".txt"]; 
+		
+		var img = new Image();
+		var blank = new Image();
+        blank.src = "Images/white background.jpg";
+
+		function register(){
+			var ctx = document.getElementById("myCanvas").getContext("2d");                                  
+			img.src = "Images/No Image Selected.jpg";
+			img.onload = function(){ //waits for image object to load finish first before displaying image
+				ctx.drawImage(img,10,10,document.getElementById("myCanvas").width - 20,document.getElementById("myCanvas").height - 20);
+			}
+		}
+		function insertImage(){
+			document.getElementById("imagePath").click();
+		}
+		function insert() {
+			var arrInputs = document.getElementById("imagePath"); //storing inputs into HTML element list
+		    if (arrInputs.type == "file") {    //if the type of input is a file
+				var sFileName = arrInputs.value;   //store the value of OInput into sFileName
+				var blnValid = false;	//Set whether file is valid or not
+				for (var i = 0; i < _validFileExtensions.length; i++) {//Compares with all file extension	                
+					if (sFileName.substr(sFileName.length - _validFileExtensions[i].length, _validFileExtensions[i].length).toLowerCase() == _validFileExtensions[i].toLowerCase()) { //checks the files extension
+						blnValid = true; //set that files are valid           
+					    	if (sFileName.substr(sFileName.length - _validFileExtensions[i].length, _validFileExtensions[i].length).toLowerCase() == _validFileExtensions[5].toLowerCase()) { //checks the files extension
+					        	alert("Loading Data from Text File...");
+					            var fr = new FileReader();
+								fr.onload = function(){
+									var c = fr.result;
+									var editedContent = c.replace("bata","data");
+									var objectData = JSON.parse(editedContent);
+									img.src = objectData.image;                             
+									drawCanvasImage();
+									loadingAnnotationBoxes(objectData);					                
+								}
+								fr.readAsText(document.getElementById("imagePath").files[0]);
+					        }
+					        else{
+					           	alert("Loading Image...");
+					            var reader = new FileReader();
+								reader.onload = function (e) {
+									img.src = e.target.result;	
+									imagePath = e.target.result;
+									//console.log(imagePath);
+									drawCanvasImage();
+								}
+								reader.readAsDataURL(document.getElementById("imagePath").files[0]);  
+					        }
+				    }
+				}
+				if (!blnValid) { //if files are not valid
+				   	alert(sFileName + " is invalid. Please select files with extensions of " + _validFileExtensions.join(", "));
+				}
+		    }
+		}
+		/*Canvas drawing function*/
+		function drawCanvasImage(){
+   			var ctx = document.getElementById("myCanvas").getContext("2d"); //Load saved Images 
+    		img.onload = function(){        
+				if(img.height > img.width){ //Centralises image
+					ctx.drawImage(blank,0,0,document.getElementById("myCanvas").width, document.getElementById("myCanvas").height);
+					var widthOverHeightRatio = img.width/img.height;
+					var editedWidth = widthOverHeightRatio * (document.getElementById("myCanvas").width - 20);
+					var imgPosition = (document.getElementById("myCanvas").width - editedWidth) / 2;
+					ctx.drawImage(img,imgPosition,10,editedWidth,(document.getElementById("myCanvas").height - 20));
+				}
+				else{
+					ctx.drawImage(blank,0,0,document.getElementById("myCanvas").width, document.getElementById("myCanvas").height);
+					var heightOverWidthRatio = img.height/img.width;
+					var editedHeight = heightOverWidthRatio * document.getElementById("myCanvas").height - 20;
+					var imgPosition = (document.getElementById("myCanvas").height - editedHeight) / 2;
+					ctx.drawImage(img,10,imgPosition, (document.getElementById("myCanvas").width - 20), editedHeight);
+				}
+			}
+		}
+		
+		function zoomIn(){
+			zoomIncrement = zoomIncrement + 0.05;
+			zoom(zoomIncrement);
+		}
+		function zoomOut(){
+			if (zoomIncrement == 1){
+				console.log("Cannot Zoom Out anymore");
+			}
+			else{
+				zoomIncrement = zoomIncrement - 0.05;
+				zoom(zoomIncrement);
+			}
+		}
+		function zoom(increment){
+			console.log("Zoomed to " + (increment * 100) + "%.");
+			var ctx = document.getElementById("myCanvas").getContext("2d"); //Load saved Images 
+    		img.src = imagePath;
+    		img.onload = function(){        
+				if(img.height > img.width){ //Centralises image
+					ctx.drawImage(blank,0,0,document.getElementById("myCanvas").width, document.getElementById("myCanvas").height);
+					var widthOverHeightRatio = img.width/img.height;
+					var editedWidth = widthOverHeightRatio * (document.getElementById("myCanvas").width - 20);
+					var imgPosition = (document.getElementById("myCanvas").width - editedWidth) / 2;
+					ctx.drawImage(img,imgPosition,10,(editedWidth * increment),((document.getElementById("myCanvas").height - 20) * increment));
+				}
+				else{
+					ctx.drawImage(blank,0,0,document.getElementById("myCanvas").width, document.getElementById("myCanvas").height);
+					var heightOverWidthRatio = img.height/img.width;
+					var editedHeight = heightOverWidthRatio * document.getElementById("myCanvas").height - 20;
+					var imgPosition = (document.getElementById("myCanvas").height - editedHeight) / 2;
+					ctx.drawImage(img,10,imgPosition, ((document.getElementById("myCanvas").width - 20) * increment), (editedHeight * increment));
+				}
+			}
+		}
+	</script>
+</head>
+<body onload = "register()">
+	<button id = "insert" onclick = "insertImage()" position = "fixed">Upload</button><br>
+	<canvas id = "myCanvas" width = "700" height = "700" style = "border:3px solid #000000;"></canvas><br>
+	<button id = "Zoom In" onclick = "zoomIn()">Zoom In</button>
+	<button id = "Zoom Out" onclick = "zoomOut()">Zoom Out</button>
+	<input id = "imagePath" type = "file" onchange = "insert()" hidden = "true">
+</body>
+</html>
